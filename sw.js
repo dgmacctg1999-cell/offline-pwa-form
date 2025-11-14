@@ -1,34 +1,29 @@
-const CACHE_NAME = "pwa-cache-v1";
+const CACHE_NAME = "pwa-app-v1";
 const FILES_TO_CACHE = [
-    "./",
-    "index.html",
-    "manifest.json",
-    "icon-192.png",
-    "icon-512.png"
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./sw.js",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
-    );
-    self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+  );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
-    event.waitUntil(self.clients.claim());
+  event.waitUntil(self.clients.claim());
 });
 
-// ALWAYS SERVE CACHE FIRST
+// Always try cache first (best for offline apps)
 self.addEventListener("fetch", event => {
-    event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            // Return cached file immediately
-            if (cachedResponse) return cachedResponse;
-
-            // Otherwise try network (for online mode)
-            return fetch(event.request).catch(() => {
-                // Optional: return fallback page
-            });
-        })
-    );
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
+  );
 });
