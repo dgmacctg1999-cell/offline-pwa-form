@@ -18,8 +18,17 @@ self.addEventListener("activate", event => {
     event.waitUntil(self.clients.claim());
 });
 
+// ALWAYS SERVE CACHE FIRST
 self.addEventListener("fetch", event => {
     event.respondWith(
-        caches.match(event.request).then(cached => cached || fetch(event.request))
+        caches.match(event.request).then(cachedResponse => {
+            // Return cached file immediately
+            if (cachedResponse) return cachedResponse;
+
+            // Otherwise try network (for online mode)
+            return fetch(event.request).catch(() => {
+                // Optional: return fallback page
+            });
+        })
     );
 });
